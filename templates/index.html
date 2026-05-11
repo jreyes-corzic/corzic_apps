@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>SUFS Catalog Manager</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	</head>
+	<body>
+		<main class="shell">
+			<section class="panel">
+				<div>
+					<p class="eyebrow">Corzic</p>
+					<h1>SUFS Manager</h1>
+					<p class="lede">Generate the latest Ariba formatted SUFS catalog files or Import new SUFS orders into Odoo.</p>
+				</div>
+
+				<div class="actions">
+					<form action="{{ url_for('generate') }}" method="post" class="action-form">
+						<h2>Generate Catalog Files</h2>
+						<p>Create the Ariba formatted upload workbook and the list of SKUs removed.</p>
+						<button class="secondary js-override-toggle" type="button" aria-expanded="{% if override_skus %}true{% else %}false{% endif %}" aria-controls="override-fields">
+							Override Product SKU
+						</button>
+						<div id="override-fields" class="override-fields{% if override_skus %} is-open{% endif %}">
+							<label for="override_skus">Product SKUs to keep on catalog</label>
+							<textarea id="override_skus" name="override_skus" rows="5" placeholder="SKU123&#10;SKU456">{{ override_skus|default([], true)|join('\n') }}</textarea>
+						</div>
+						<button type="submit">
+							<span class="button-ready">Generate Files</span>
+							<span class="button-loading">Generating...</span>
+						</button>
+					</form>
+
+					<form action="{{ url_for('import_orders') }}" method="post" class="action-form">
+						<h2>Import New Orders</h2>
+						<label for="num_orders">Maximum orders</label>
+						<input id="num_orders" name="num_orders" type="number" min="1" max="100" value="10">
+						<button type="submit">
+							<span class="button-ready">Import Orders</span>
+							<span class="button-loading">Importing...</span>
+						</button>
+					</form>
+				</div>
+
+				{% if error %}
+					<div class="message error" role="alert">
+						<strong>Catalog export failed</strong>
+						<span>{{ error }}</span>
+					</div>
+				{% endif %}
+
+				{% if order_error %}
+					<div class="message error" role="alert">
+						<strong>Order import failed</strong>
+						<span>{{ order_error }}</span>
+					</div>
+				{% endif %}
+
+				{% if files %}
+					<div class="message success">
+						<strong>Export complete</strong>
+						<span>{{ num_removals }} SKUs were marked for removal.</span>
+					</div>
+
+					{% if unknown_override_skus %}
+						<div class="message warning">
+							<strong>Override SKU log</strong>
+							<span>The following SKUs are incorrect or do not exist: {{ unknown_override_skus|join(', ') }}</span>
+						</div>
+					{% endif %}
+
+					<div class="downloads">
+						<a class="download primary" href="{{ url_for('download', filename=zip_file) }}">Download all files</a>
+						{% for file in files %}
+							<a class="download" href="{{ url_for('download', filename=file) }}">{{ file }}</a>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if order_result %}
+					<div class="message success">
+						<strong>Order import complete</strong>
+						<span>{{ order_result.created_count }} of {{ order_result.requested_orders }} requested orders were created.</span>
+					</div>
+
+					{% if order_result.created_order_ids %}
+						<div class="order-ids">
+							{% for order_id in order_result.created_order_ids %}
+								<span>Odoo order {{ order_id }}</span>
+							{% endfor %}
+						</div>
+					{% endif %}
+				{% endif %}
+			</section>
+		</main>
+
+		<script>
+			document.querySelectorAll(".js-override-toggle").forEach((button) => {
+				button.addEventListener("click", () => {
+					const fields = document.getElementById(button.getAttribute("aria-controls"));
+					const isOpen = fields.classList.toggle("is-open");
+					button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+					if (isOpen) {
+						fields.querySelector("textarea").focus();
+					}
+				});
+			});
+
+			document.querySelectorAll(".action-form").forEach((form) => {
+				form.addEventListener("submit", () => {
+					const button = form.querySelector("button[type='submit']");
+					button.disabled = true;
+					button.classList.add("is-loading");
+				});
+			});
+		</script>
+	</body>
+</html>

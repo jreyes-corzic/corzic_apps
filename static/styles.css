@@ -1,0 +1,265 @@
+:root {
+	color-scheme: light;
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	background: #eef2f6;
+	color: #15202b;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	background:
+		linear-gradient(135deg, rgba(19, 107, 92, 0.08), transparent 36%),
+		linear-gradient(315deg, rgba(199, 69, 48, 0.08), transparent 32%),
+		#eef2f6;
+}
+
+.shell {
+	display: grid;
+	min-height: 100vh;
+	place-items: center;
+	padding: 32px 16px;
+}
+
+.panel {
+	width: min(100%, 680px);
+	border: 1px solid #d5dde6;
+	border-radius: 8px;
+	background: #ffffff;
+	padding: 32px;
+	box-shadow: 0 18px 60px rgba(21, 32, 43, 0.12);
+}
+
+.eyebrow {
+	margin: 0 0 8px;
+	color: #12695d;
+	font-size: 0.76rem;
+	font-weight: 800;
+	letter-spacing: 0;
+	text-transform: uppercase;
+}
+
+h1 {
+	margin: 0;
+	font-size: clamp(2rem, 5vw, 3.4rem);
+	line-height: 1;
+	letter-spacing: 0;
+}
+
+.lede {
+	max-width: 54ch;
+	margin: 16px 0 28px;
+	color: #4d5f70;
+	font-size: 1.05rem;
+	line-height: 1.55;
+}
+
+button,
+.download {
+	display: inline-flex;
+	min-height: 44px;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #12695d;
+	border-radius: 6px;
+	background: #12695d;
+	color: #ffffff;
+	font: inherit;
+	font-weight: 750;
+	padding: 0 18px;
+	text-decoration: none;
+	cursor: pointer;
+	transition: transform 120ms ease, background 120ms ease, opacity 120ms ease;
+}
+
+.actions {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+	margin-top: 28px;
+}
+
+.action-form {
+	display: grid;
+	align-content: start;
+	gap: 12px;
+	min-height: 220px;
+	border: 1px solid #dbe3eb;
+	border-radius: 8px;
+	background: #f8fafc;
+	padding: 18px;
+}
+
+.action-form h2 {
+	margin: 0;
+	font-size: 1.1rem;
+	letter-spacing: 0;
+}
+
+.action-form p,
+.action-form label {
+	margin: 0;
+	color: #4d5f70;
+	font-size: 0.95rem;
+	line-height: 1.45;
+}
+
+.action-form input {
+	width: 100%;
+	min-height: 42px;
+	border: 1px solid #cfd8e3;
+	border-radius: 6px;
+	background: #ffffff;
+	color: #15202b;
+	font: inherit;
+	padding: 0 12px;
+}
+
+button:hover,
+.download:hover {
+	background: #0d574d;
+	transform: translateY(-1px);
+}
+
+button.secondary {
+	border-color: #cfd8e3;
+	background: #ffffff;
+	color: #15202b;
+}
+
+button.secondary:hover {
+	background: #f5f8fb;
+}
+
+button:disabled {
+	cursor: wait;
+	opacity: 0.72;
+	transform: none;
+}
+
+.button-loading,
+button.is-loading .button-ready {
+	display: none;
+}
+
+button.is-loading .button-loading {
+	display: inline;
+}
+
+.message {
+	display: grid;
+	gap: 4px;
+	margin-top: 24px;
+	border-radius: 8px;
+	padding: 14px 16px;
+	line-height: 1.4;
+}
+
+.message strong {
+	font-size: 0.95rem;
+}
+
+.message span {
+	color: #3e4d5d;
+}
+
+.success {
+	border: 1px solid #b6ded1;
+	background: #eefaf6;
+}
+
+.error {
+	border: 1px solid #f0b9ad;
+	background: #fff1ee;
+}
+
+.warning {
+	border: 1px solid #f0d28a;
+	background: #fff8e8;
+}
+
+.downloads {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 10px;
+	margin-top: 18px;
+}
+
+.order-ids {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 14px;
+}
+
+.order-ids span {
+	border: 1px solid #cfd8e3;
+	border-radius: 6px;
+	background: #ffffff;
+	padding: 8px 10px;
+	color: #334456;
+	font-size: 0.92rem;
+}
+
+.download {
+	justify-content: flex-start;
+	border-color: #cfd8e3;
+	background: #ffffff;
+	color: #15202b;
+	overflow-wrap: anywhere;
+}
+
+.download:hover {
+	background: #f5f8fb;
+}
+
+.download.primary {
+	justify-content: center;
+	border-color: #12695d;
+	background: #12695d;
+	color: #ffffff;
+}
+
+.download.primary:hover {
+	background: #0d574d;
+}
+
+.override-fields {
+	display: none;
+	gap: 8px;
+}
+
+.override-fields.is-open {
+	display: grid;
+}
+
+.action-form textarea {
+	width: 100%;
+	min-height: 120px;
+	resize: vertical;
+	border: 1px solid #cfd8e3;
+	border-radius: 6px;
+	background: #ffffff;
+	color: #15202b;
+	font: inherit;
+	padding: 10px 12px;
+}
+
+@media (max-width: 540px) {
+	.actions {
+		grid-template-columns: 1fr;
+	}
+
+	.panel {
+		padding: 24px;
+	}
+
+	button,
+	.download {
+		width: 100%;
+	}
+}
