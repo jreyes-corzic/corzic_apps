@@ -62,9 +62,3 @@ pip install -r requirements.txt
 export ODOO_PASSWORD="your-password"
 flask --app app run --host 0.0.0.0 --port 8000
 ```
-
-The original command-line export still works:
-
-```sh
-python sufs_catalog.py
-```
