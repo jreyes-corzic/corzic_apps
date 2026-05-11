@@ -52,7 +52,7 @@ def get_df_upload(db,uid,password,models,override=None):
 	ids_to_remove=[]
 	skus_to_remove=[]
 	for idx,row in sufs_df.iterrows():
-		if (row['qty_available'] - row['outgoing_qty'] - row['ovap_onhand'] < 1):
+		if (row['qty_available'] - row['outgoing_qty'] < 1):
 			if (6 not in row['route_ids'] and not row['default_code'] in override):
 				ids_to_remove.append(row['id'])
 				skus_to_remove.append(row['default_code'])
