@@ -1,0 +1,23 @@
+apiVersion: iolite.oycs.com/v1
+kind: Minerapp
+metadata:
+  name: sufs-manager
+  labels:
+    iolite.oycs.com/version: "1"
+spec:
+  key: sufs-manager
+  version: 1.0.0
+  name: SUFS Manager
+
+  permissions:
+    - type: egress
+      key: odoo
+      required: true
+      urls:
+        - https://riss-group-corzic.odoo.com
+
+  containers:
+    - image: registry.corzicsys.com/sufs-manager-web-app:v1
+      http:
+        port: 8000
+
