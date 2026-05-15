@@ -49,7 +49,7 @@
 							<p class="eyebrow">Performance</p>
 							<h2 id="performance-title">Brand Order Share</h2>
 						</div>
-						<button class="secondary" type="button" id="refresh-performance">Refresh</button>
+						<button class="secondary" type="button" id="refresh-performance">Load Chart</button>
 					</div>
 					<div class="chart-layout">
 						<div class="pie-chart-wrap">
@@ -57,7 +57,7 @@
 							<div id="chart-tooltip" class="chart-tooltip" role="status" aria-live="polite"></div>
 						</div>
 						<div>
-							<p id="performance-status" class="chart-status">Loading brand performance...</p>
+							<p id="performance-status" class="chart-status">Load the chart to view brand order share since April 2025.</p>
 							<ul id="brand-performance-legend" class="chart-legend"></ul>
 						</div>
 					</div>
@@ -241,6 +241,7 @@
 			async function loadPerformance() {
 				status.textContent = "Loading brand performance...";
 				refreshButton.disabled = true;
+				refreshButton.textContent = "Loading...";
 				try {
 					const response = await fetch("{{ url_for('brand_order_performance') }}");
 					const data = await response.json();
@@ -262,11 +263,11 @@
 					legend.replaceChildren();
 				} finally {
 					refreshButton.disabled = false;
+					refreshButton.textContent = "Refresh";
 				}
 			}
 
 			refreshButton.addEventListener("click", loadPerformance);
-			loadPerformance();
 		</script>
 	</body>
 </html>
