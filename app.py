@@ -2,10 +2,11 @@ from datetime import datetime
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from flask import Flask, abort, render_template, request, send_from_directory
+from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 
 import sufs_catalog
 import sufs_orders
+import sufs_performance
 
 
 app = Flask(__name__)
@@ -66,6 +67,21 @@ def import_orders():
 		return render_template("index.html", order_result=result)
 	except Exception as exc:
 		return render_template("index.html", order_error=str(exc)), 500
+
+
+@app.get("/performance/brand-orders")
+def brand_order_performance():
+	try:
+		uid, models = sufs_performance.get_odoo_connection()
+		brands = sufs_performance.get_sufs_brand_performance(
+			sufs_performance.od.db,
+			uid,
+			sufs_performance.od.password,
+			models,
+		)
+		return jsonify({"brands": brands})
+	except Exception as exc:
+		return jsonify({"error": str(exc)}), 500
 
 
 @app.get("/download/<path:filename>")

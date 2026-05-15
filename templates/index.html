@@ -43,6 +43,26 @@
 					</form>
 				</div>
 
+				<section class="performance-panel" aria-labelledby="performance-title">
+					<div class="performance-header">
+						<div>
+							<p class="eyebrow">Performance</p>
+							<h2 id="performance-title">Brand Order Share</h2>
+						</div>
+						<button class="secondary" type="button" id="refresh-performance">Refresh</button>
+					</div>
+					<div class="chart-layout">
+						<div class="pie-chart-wrap">
+							<svg id="brand-performance-chart" class="pie-chart" viewBox="0 0 220 220" role="img" aria-labelledby="performance-title"></svg>
+							<div id="chart-tooltip" class="chart-tooltip" role="status" aria-live="polite"></div>
+						</div>
+						<div>
+							<p id="performance-status" class="chart-status">Loading brand performance...</p>
+							<ul id="brand-performance-legend" class="chart-legend"></ul>
+						</div>
+					</div>
+				</section>
+
 				{% if error %}
 					<div class="message error" role="alert">
 						<strong>Catalog export failed</strong>
@@ -114,6 +134,139 @@
 					button.classList.add("is-loading");
 				});
 			});
+
+			const chart = document.getElementById("brand-performance-chart");
+			const legend = document.getElementById("brand-performance-legend");
+			const status = document.getElementById("performance-status");
+			const tooltip = document.getElementById("chart-tooltip");
+			const refreshButton = document.getElementById("refresh-performance");
+			const colors = [
+				"#12695d",
+				"#c74530",
+				"#2f7dbd",
+				"#d99a21",
+				"#6b5fb5",
+				"#208c8c",
+				"#9a5a2e",
+				"#5f7387",
+				"#7d9445",
+				"#a34c74"
+			];
+
+			function polarToCartesian(center, radius, angle) {
+				const radians = (angle - 90) * Math.PI / 180;
+				return {
+					x: center + radius * Math.cos(radians),
+					y: center + radius * Math.sin(radians)
+				};
+			}
+
+			function describeSlice(startAngle, endAngle) {
+				const center = 110;
+				const radius = 96;
+				const start = polarToCartesian(center, radius, endAngle);
+				const end = polarToCartesian(center, radius, startAngle);
+				const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
+
+				return [
+					`M ${center} ${center}`,
+					`L ${start.x} ${start.y}`,
+					`A ${radius} ${radius} 0 ${largeArc} 0 ${end.x} ${end.y}`,
+					"Z"
+				].join(" ");
+			}
+
+			function formatPercent(value) {
+				return new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 1 }).format(value);
+			}
+
+			function formatOrders(value) {
+				return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
+			}
+
+			function showTooltip(event, brand) {
+				const bounds = event.currentTarget.getBoundingClientRect();
+				const wrapperBounds = event.currentTarget.closest(".pie-chart-wrap").getBoundingClientRect();
+				const x = event.clientX ? event.clientX - wrapperBounds.left : bounds.left + bounds.width / 2 - wrapperBounds.left;
+				const y = event.clientY ? event.clientY - wrapperBounds.top : bounds.top + bounds.height / 2 - wrapperBounds.top;
+				tooltip.textContent = `${brand.brand}: ${formatPercent(brand.percentage)}`;
+				tooltip.style.left = `${x}px`;
+				tooltip.style.top = `${y}px`;
+				tooltip.classList.add("is-visible");
+			}
+
+			function hideTooltip() {
+				tooltip.classList.remove("is-visible");
+			}
+
+			function renderChart(brands) {
+				chart.replaceChildren();
+				legend.replaceChildren();
+
+				let currentAngle = 0;
+				brands.forEach((brand, index) => {
+					const color = colors[index % colors.length];
+					const endAngle = currentAngle + brand.percentage * 360;
+					const segment = document.createElementNS("http://www.w3.org/2000/svg", brand.percentage >= 0.9999 ? "circle" : "path");
+					if (brand.percentage >= 0.9999) {
+						segment.setAttribute("cx", "110");
+						segment.setAttribute("cy", "110");
+						segment.setAttribute("r", "96");
+					} else {
+						segment.setAttribute("d", describeSlice(currentAngle, endAngle));
+					}
+					segment.setAttribute("fill", color);
+					segment.setAttribute("tabindex", "0");
+					segment.setAttribute("aria-label", `${brand.brand}: ${formatPercent(brand.percentage)}`);
+					segment.addEventListener("mousemove", (event) => showTooltip(event, brand));
+					segment.addEventListener("mouseleave", hideTooltip);
+					segment.addEventListener("focus", (event) => showTooltip(event, brand));
+					segment.addEventListener("blur", hideTooltip);
+					chart.appendChild(segment);
+
+					const item = document.createElement("li");
+					const swatch = document.createElement("span");
+					const label = document.createElement("span");
+					const percent = document.createElement("strong");
+					swatch.className = "legend-color";
+					swatch.style.background = color;
+					label.textContent = brand.brand;
+					percent.textContent = formatPercent(brand.percentage);
+					item.append(swatch, label, percent);
+					legend.appendChild(item);
+					currentAngle = endAngle;
+				});
+			}
+
+			async function loadPerformance() {
+				status.textContent = "Loading brand performance...";
+				refreshButton.disabled = true;
+				try {
+					const response = await fetch("{{ url_for('brand_order_performance') }}");
+					const data = await response.json();
+					if (!response.ok) {
+						throw new Error(data.error || "Unable to load brand performance.");
+					}
+					if (!data.brands.length) {
+						status.textContent = "No brand order data found since April 2025.";
+						chart.replaceChildren();
+						legend.replaceChildren();
+						return;
+					}
+					renderChart(data.brands);
+					const totalOrders = data.brands.reduce((sum, brand) => sum + brand.orders, 0);
+					status.textContent = `${formatOrders(totalOrders)} orders since April 2025`;
+				} catch (error) {
+					status.textContent = error.message;
+					chart.replaceChildren();
+					legend.replaceChildren();
+				} finally {
+					refreshButton.disabled = false;
+				}
+			}
+
+			refreshButton.addEventListener("click", loadPerformance);
+			loadPerformance();
 		</script>
 	</body>
 </html>
