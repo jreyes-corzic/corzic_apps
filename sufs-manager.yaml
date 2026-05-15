@@ -6,7 +6,7 @@ metadata:
     iolite.oycs.com/version: "1"
 spec:
   key: sufs-manager
-  version: 2.0.0
+  version: 2.5.0
   name: SUFS Manager
 
   permissions:
@@ -17,7 +17,76 @@ spec:
         - https://riss-group-corzic.odoo.com
 
   containers:
-    - image: registry.corzicsys.com/sufs-manager-web-app:v2
+    - image: registry.corzicsys.com/sufs-manager-web-app:v2-5
       http:
         port: 8000
-
+      env:
+      - name: ODOO_URL
+        valueFrom:
+          config:
+            key: odoo-url
+            name: Odoo URL
+            fieldType: string
+      - name: ODOO_DB
+        valueFrom:
+          config:
+            key: odoo-db
+            name: Odoo Database
+            fieldType: string
+      - name: ODOO_USERNAME
+        valueFrom:
+          config:
+            key: odoo-username
+            name: Odoo Username
+            fieldType: string
+      - name: ODOO_PASSWORD
+        valueFrom:
+          config:
+            key: odoo-password
+            name: Odoo Password
+            fieldType: password
+      - name: ODOO_DEV_DB
+        valueFrom:
+          config:
+            key: odoo-dev-db
+            name: Odoo Development Database
+            fieldType: string
+      - name: ODOO_DEV_URL
+        valueFrom:
+          config:
+            key: odoo-dev-url
+            name: Odoo Development URL
+            fieldType: string
+      - name: ODOO_DEV_PASSWORD
+        valueFrom:
+          config:
+            key: odoo-dev-password
+            name: Odoo Dev Password
+            fieldType: password
+      - name: ARIBA_CLIENT_ID
+        valueFrom:
+          config:
+            key: ariba-client-id
+            name: Ariba Client ID
+            fieldType: string
+      - name: ARIBA_CLIENT_SECRET
+        valueFrom:
+          config:
+            key: ariba-client-secret
+            name: Ariba Client Secret
+            fieldType: password
+      - name: ARIBA_APPLICATION_KEY
+        valueFrom:
+          config:
+            key: ariba-application-key
+            name: Ariba Application Key
+            fieldType: password
+      - name: ARIBA_REALM
+        valueFrom:
+          config:
+            key: ariba-realm
+            name: Ariba Realm
+            fieldType: string
+      - name: SUFS_OUTPUT_DIR
+        value: "/app/output"
+        

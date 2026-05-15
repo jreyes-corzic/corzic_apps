@@ -3,6 +3,5 @@ __pycache__/
 .venv/
 venv/
 output/
-.env
 .git/
 .DS_Store

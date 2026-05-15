@@ -4,5 +4,5 @@
 #test locally by creating environment and running
 #python3 main.py from app directory with modules modified for local use
 
-docker buildx build --push --platform linux/amd64 --tag registry.corzicsys.com/sufs-manager-web-app:v2 .
+docker buildx build --push --platform linux/amd64 --tag registry.corzicsys.com/sufs-manager-web-app:v2-5 .
 cat sufs-manager.yaml | curl https://iolite.corzicsys.com/api/apps/sufs-manager -i -X PUT -H "Content-Type: text/yaml" -H "X-API-Key: XXn7tsQHbEqy4hHPQ2otg6OZA7FgbM" --data-binary @-
