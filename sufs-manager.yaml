@@ -6,7 +6,7 @@ metadata:
     iolite.oycs.com/version: "1"
 spec:
   key: sufs-manager
-  version: 1.0.0
+  version: 2.0.0
   name: SUFS Manager
 
   permissions:
@@ -17,7 +17,7 @@ spec:
         - https://riss-group-corzic.odoo.com
 
   containers:
-    - image: registry.corzicsys.com/sufs-manager-web-app:v1
+    - image: registry.corzicsys.com/sufs-manager-web-app:v2
       http:
         port: 8000
 
