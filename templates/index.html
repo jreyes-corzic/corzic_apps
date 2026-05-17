@@ -49,7 +49,13 @@
 							<p class="eyebrow">Performance</p>
 							<h2 id="performance-title">Brand Order Share</h2>
 						</div>
-						<button class="secondary" type="button" id="refresh-performance">Load Chart</button>
+						<div class="performance-controls">
+							<div class="chart-toggle" role="group" aria-label="Chart type">
+								<button class="chart-toggle-btn is-active" type="button" data-mode="orders">Order Share</button>
+								<button class="chart-toggle-btn" type="button" data-mode="revenue">Revenue Share</button>
+							</div>
+							<button class="secondary" type="button" id="refresh-performance">Load Chart</button>
+						</div>
 					</div>
 					<div class="chart-layout">
 						<div class="pie-chart-wrap">
@@ -140,6 +146,8 @@
 			const status = document.getElementById("performance-status");
 			const tooltip = document.getElementById("chart-tooltip");
 			const refreshButton = document.getElementById("refresh-performance");
+			const titleEl = document.getElementById("performance-title");
+			const toggleBtns = document.querySelectorAll(".chart-toggle-btn");
 			const colors = [
 				"#12695d",
 				"#c74530",
@@ -152,6 +160,27 @@
 				"#7d9445",
 				"#a34c74"
 			];
+
+			let currentMode = "orders";
+
+			const endpointUrls = {
+				orders: "{{ url_for('brand_order_performance') }}",
+				revenue: "{{ url_for('brand_revenue_performance') }}"
+			};
+
+			toggleBtns.forEach((btn) => {
+				btn.addEventListener("click", () => {
+					const mode = btn.dataset.mode;
+					if (mode === currentMode) return;
+					currentMode = mode;
+					toggleBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.mode === mode));
+					titleEl.textContent = mode === "orders" ? "Brand Order Share" : "Brand Revenue Share";
+					status.textContent = `Load the chart to view brand ${mode === "orders" ? "order" : "revenue"} share since April 2025.`;
+					chart.replaceChildren();
+					legend.replaceChildren();
+					refreshButton.textContent = "Load Chart";
+				});
+			});
 
 			function polarToCartesian(center, radius, angle) {
 				const radians = (angle - 90) * Math.PI / 180;
@@ -184,12 +213,17 @@
 				return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
 			}
 
-			function showTooltip(event, brand) {
+			function formatRevenue(value) {
+				return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+			}
+
+			function showTooltip(event, brand, mode) {
 				const bounds = event.currentTarget.getBoundingClientRect();
 				const wrapperBounds = event.currentTarget.closest(".pie-chart-wrap").getBoundingClientRect();
 				const x = event.clientX ? event.clientX - wrapperBounds.left : bounds.left + bounds.width / 2 - wrapperBounds.left;
 				const y = event.clientY ? event.clientY - wrapperBounds.top : bounds.top + bounds.height / 2 - wrapperBounds.top;
-				tooltip.textContent = `${brand.brand}: ${formatPercent(brand.percentage)}`;
+				const valueStr = mode === "revenue" ? formatRevenue(brand.revenue) : formatOrders(brand.orders);
+				tooltip.textContent = `${brand.brand}: ${formatPercent(brand.percentage)} (${valueStr})`;
 				tooltip.style.left = `${x}px`;
 				tooltip.style.top = `${y}px`;
 				tooltip.classList.add("is-visible");
@@ -199,7 +233,7 @@
 				tooltip.classList.remove("is-visible");
 			}
 
-			function renderChart(brands) {
+			function renderChart(brands, mode) {
 				chart.replaceChildren();
 				legend.replaceChildren();
 
@@ -218,9 +252,9 @@
 					segment.setAttribute("fill", color);
 					segment.setAttribute("tabindex", "0");
 					segment.setAttribute("aria-label", `${brand.brand}: ${formatPercent(brand.percentage)}`);
-					segment.addEventListener("mousemove", (event) => showTooltip(event, brand));
+					segment.addEventListener("mousemove", (event) => showTooltip(event, brand, mode));
 					segment.addEventListener("mouseleave", hideTooltip);
-					segment.addEventListener("focus", (event) => showTooltip(event, brand));
+					segment.addEventListener("focus", (event) => showTooltip(event, brand, mode));
 					segment.addEventListener("blur", hideTooltip);
 					chart.appendChild(segment);
 
@@ -243,20 +277,25 @@
 				refreshButton.disabled = true;
 				refreshButton.textContent = "Loading...";
 				try {
-					const response = await fetch("{{ url_for('brand_order_performance') }}");
+					const response = await fetch(endpointUrls[currentMode]);
 					const data = await response.json();
 					if (!response.ok) {
 						throw new Error(data.error || "Unable to load brand performance.");
 					}
 					if (!data.brands.length) {
-						status.textContent = "No brand order data found since April 2025.";
+						status.textContent = `No brand ${currentMode} data found since April 2025.`;
 						chart.replaceChildren();
 						legend.replaceChildren();
 						return;
 					}
-					renderChart(data.brands);
-					const totalOrders = data.brands.reduce((sum, brand) => sum + brand.orders, 0);
-					status.textContent = `${formatOrders(totalOrders)} orders since April 2025`;
+					renderChart(data.brands, currentMode);
+					if (currentMode === "orders") {
+						const total = data.brands.reduce((sum, b) => sum + b.orders, 0);
+						status.textContent = `${formatOrders(total)} orders since April 2025`;
+					} else {
+						const total = data.brands.reduce((sum, b) => sum + b.revenue, 0);
+						status.textContent = `${formatRevenue(total)} revenue since April 2025`;
+					}
 				} catch (error) {
 					status.textContent = error.message;
 					chart.replaceChildren();

@@ -73,7 +73,22 @@ def import_orders():
 def brand_order_performance():
 	try:
 		uid, models = sufs_performance.get_odoo_connection()
-		brands = sufs_performance.get_sufs_brand_performance(
+		brands = sufs_performance.get_sufs_brand_order_share(
+			sufs_performance.od.db,
+			uid,
+			sufs_performance.od.password,
+			models,
+		)
+		return jsonify({"brands": brands})
+	except Exception as exc:
+		return jsonify({"error": str(exc)}), 500
+
+
+@app.get("/performance/brand-revenue")
+def brand_revenue_performance():
+	try:
+		uid, models = sufs_performance.get_odoo_connection()
+		brands = sufs_performance.get_sufs_brand_revenue_share(
 			sufs_performance.od.db,
 			uid,
 			sufs_performance.od.password,
